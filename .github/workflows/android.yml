@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -19,8 +18,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4.2.1
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: temurin
+          java-version: 17
 
       - name: Give permission to executable
         run: chmod +x gradlew
@@ -28,40 +27,44 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Clear build cache
-        uses: gradle/gradle-build-action@v3.1.0
-        with:
-          gradle-version: nightly
-          arguments: clean
+      # IMPORTANT FIX
+      - name: Accept SDK licenses and install NDK
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager "ndk;29.0.13113456"
 
-      - name: Build with gradle
-        uses: gradle/gradle-build-action@v3.1.0
-        with:
-          gradle-version: nightly
-          arguments: assembleDevDebug
+      - name: Clean project
+        run: ./gradlew clean
 
-      - name: Upload debug apks
+      - name: Build with Gradle
+        run: ./gradlew assembleDevDebug
+
+      - name: Upload arm64-v8a APK
         uses: actions/upload-artifact@v4
         with:
           name: app-arm64-v8a
           path: app/build/outputs/apk/dev/debug/app-dev-arm64-v8a-debug.apk
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload armeabi-v7a APK
+        uses: actions/upload-artifact@v4
         with:
           name: app-armeabi-v7a
           path: app/build/outputs/apk/dev/debug/app-dev-armeabi-v7a-debug.apk
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload x86 APK
+        uses: actions/upload-artifact@v4
         with:
           name: app-x86
           path: app/build/outputs/apk/dev/debug/app-dev-x86-debug.apk
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload x86_64 APK
+        uses: actions/upload-artifact@v4
         with:
           name: app-x86_64
           path: app/build/outputs/apk/dev/debug/app-dev-x86_64-debug.apk
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload universal APK
+        uses: actions/upload-artifact@v4
         with:
           name: app-universal
           path: app/build/outputs/apk/dev/debug/app-dev-universal-debug.apk
